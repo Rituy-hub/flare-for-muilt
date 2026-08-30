@@ -12,6 +12,7 @@ import (
 	session "github.com/labstack/echo-contrib/v5/session"
 	"github.com/labstack/echo/v5"
 
+	"github.com/soulteary/flare/config/data"
 	"github.com/soulteary/flare/config/define"
 )
 
@@ -53,6 +54,7 @@ func RequestHandle(e *echo.Echo) {
 			HttpOnly: true,
 		}
 		e.Use(session.Middleware(store))
+		e.GET(define.MiscPages.Login.Path, loginPage)
 		e.POST(define.MiscPages.Login.Path, login)
 		e.POST(define.MiscPages.Logout.Path, logout)
 		e.GET(define.MiscPages.Register.Path, registerPage)
@@ -118,6 +120,48 @@ func GetUserLoginDate(c *echo.Context) string {
 		}
 	}
 	return ""
+}
+
+// loginPage 登录页面
+func loginPage(c *echo.Context) error {
+	// 检查是否已登录
+	sess, err := session.Get(sessionName, c)
+	if err == nil && sess.Values[SESSION_KEY_USER_NAME] != nil {
+		return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+	}
+
+	// 检查是否启用多用户功能
+	showRegister := false
+	if options, err := data.GetAllSettingsOptions(); err == nil {
+		showRegister = options.ShowMultiUser
+	}
+
+	registerBtn := ""
+	if showRegister {
+		registerBtn = `<form method=GET action=` + define.MiscPages.Register.Path + ` style="margin-top:10px"><button type=submit class=btn-register>注册</button></form>`
+	}
+
+	html := `<!doctype html><html lang=zh><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>登录</title><style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f5;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
+.login-box{background:#fff;padding:40px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.1);width:360px}
+.login-box h2{text-align:center;margin:0 0 30px;color:#333}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;margin-bottom:8px;color:#666;font-size:14px}
+.form-group input{width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-size:14px;box-sizing:border-box}
+.form-group input:focus{outline:none;border-color:#4a90d9}
+.btn-login{width:100%;padding:12px;background:#4a90d9;color:#fff;border:none;border-radius:4px;font-size:16px;cursor:pointer}
+.btn-login:hover{background:#357abd}
+.btn-register{width:100%;padding:12px;background:#f0f0f0;color:#333;border:none;border-radius:4px;font-size:16px;cursor:pointer}
+.btn-register:hover{background:#e0e0e0}
+</style></head><body><div class=login-box><h2>用户登录</h2>
+<form method=POST action=` + define.MiscPages.Login.Path + `>
+<div class=form-group><label>用户名</label><input type=text name=username placeholder="请输入用户名" required></div>
+<div class=form-group><label>密码</label><input type=password name=password placeholder="请输入密码" required></div>
+<button type=submit class=btn-login>登录</button>
+</form>
+` + registerBtn + `
+</div></body></html>`
+	return c.HTML(http.StatusOK, html)
 }
 
 func login(c *echo.Context) error {
