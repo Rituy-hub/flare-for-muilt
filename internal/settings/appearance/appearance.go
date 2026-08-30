@@ -2,6 +2,7 @@ package appearance
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 	"strings"
 
@@ -43,19 +44,19 @@ func updateAppearanceOptions(c *echo.Context) error {
 	if err := c.Bind(&body); err != nil {
 		return c.JSON(http.StatusForbidden, "提交数据缺失")
 	}
+
+	// 获取当前配置，用于非管理员保持模块设置原值
+	options, err := data.GetAllSettingsOptions()
+	if err != nil {
+		return pageAppearance(c)
+	}
+
 	var update model.Application
+	// 通用设置（所有用户可修改）
 	update.Title = body.OptionTitle
 	update.Footer = body.OptionFooter
 	update.OpenAppNewTab = body.OptionOpenAppNewTab
 	update.OpenBookmarkNewTab = body.OptionOpenBookmarkNewTab
-	update.ShowTitle = body.OptionShowTitle
-	update.Greetings = body.OptionGreetings
-	update.ShowDateTime = body.OptionShowDateTime
-	update.ShowApps = body.OptionShowApps
-	update.ShowBookmarks = body.OptionShowBookmarks
-	update.ShowMultiUser = body.OptionShowMultiUser
-	update.HideSettingsButton = body.HideSettingsButton
-	update.HideHelpButton = body.HideHelpButton
 	update.EnableEncryptedLink = body.EnableEncryptedLink
 	update.KeepLetterCase = body.KeepLetterCase
 	requestIconMode := strings.ToUpper(body.IconMode)
@@ -67,6 +68,32 @@ func updateAppearanceOptions(c *echo.Context) error {
 	if body.Locale != "" {
 		update.Locale = body.Locale
 	}
+
+	// 模块设置（仅管理员可修改，非管理员保持原值）
+	username := auth.GetUserName(c)
+	isAdmin := username == "" || auth.IsAdminUser(username)
+	if isAdmin {
+		update.ShowTitle = body.OptionShowTitle
+		update.Greetings = body.OptionGreetings
+		update.ShowDateTime = body.OptionShowDateTime
+		update.ShowApps = body.OptionShowApps
+		update.ShowBookmarks = body.OptionShowBookmarks
+		update.ShowMultiUser = body.OptionShowMultiUser
+		update.HideSettingsButton = body.HideSettingsButton
+		update.HideHelpButton = body.HideHelpButton
+	} else {
+		// 非管理员保持模块设置原值
+		update.ShowTitle = options.ShowTitle
+		update.Greetings = options.Greetings
+		update.ShowDateTime = options.ShowDateTime
+		update.ShowApps = options.ShowApps
+		update.ShowBookmarks = options.ShowBookmarks
+		update.ShowMultiUser = options.ShowMultiUser
+		update.HideSettingsButton = options.HideSettingsButton
+		update.HideHelpButton = options.HideHelpButton
+		log.Printf("[设置] 非管理员用户，模块设置保持不变: username=%s", username)
+	}
+
 	data.UpdateAppearance(update)
 	return pageAppearance(c)
 }
@@ -104,5 +131,8 @@ func pageAppearance(c *echo.Context) error {
 	m["OptionIconModeFilling"] = IconModeFilling
 	m["OptionLocale"] = options.Locale
 	m["Locale"] = options.Locale
+	// 传递管理员权限状态
+	currentUser := auth.GetUserName(c)
+	m["IsAdmin"] = currentUser == "" || auth.IsAdminUser(currentUser)
 	return c.Render(http.StatusOK, "settings.html", m)
 }

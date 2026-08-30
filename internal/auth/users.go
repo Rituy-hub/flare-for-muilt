@@ -190,3 +190,87 @@ func InitUserDir(username string) error {
 	}
 	return nil
 }
+
+// CreateDefaultAdmin 创建默认管理员账户
+func CreateDefaultAdmin() error {
+	users, err := loadUsers()
+	if err != nil {
+		users = &UsersData{Users: []UserRecord{}}
+	}
+
+	// 检查是否已存在管理员
+	for _, u := range users.Users {
+		if u.IsAdmin {
+			return nil
+		}
+	}
+
+	// 创建默认管理员
+	users.Users = append(users.Users, UserRecord{
+		Username:           "admin",
+		PasswordHash:       HashPassword("admin123"),
+		IsAdmin:            true,
+		MustChangePassword: true,
+	})
+
+	return saveUsers(users)
+}
+
+// IsAdminUser 检查用户是否是管理员
+func IsAdminUser(username string) bool {
+	users, err := loadUsers()
+	if err != nil {
+		return false
+	}
+	for _, u := range users.Users {
+		if u.Username == username {
+			return u.IsAdmin
+		}
+	}
+	return false
+}
+
+// MustChangePasswordUser 检查用户是否需要修改密码
+func MustChangePasswordUser(username string) bool {
+	users, err := loadUsers()
+	if err != nil {
+		return false
+	}
+	for _, u := range users.Users {
+		if u.Username == username {
+			return u.MustChangePassword
+		}
+	}
+	return false
+}
+
+// ChangeUserPassword 修改用户密码
+func ChangeUserPassword(username, newPassword string) error {
+	users, err := loadUsers()
+	if err != nil {
+		return err
+	}
+	for i, u := range users.Users {
+		if u.Username == username {
+			users.Users[i].PasswordHash = HashPassword(newPassword)
+			users.Users[i].MustChangePassword = false
+			return saveUsers(users)
+		}
+	}
+	return fmt.Errorf("用户不存在")
+}
+
+// UpdateAdminUsername 修改管理员用户名
+func UpdateAdminUsername(oldUsername, newUsername string) error {
+	users, err := loadUsers()
+	if err != nil {
+		return err
+	}
+	for i, u := range users.Users {
+		if u.Username == oldUsername && u.IsAdmin {
+			users.Users[i].Username = newUsername
+			return saveUsers(users)
+		}
+	}
+	return fmt.Errorf("管理员用户不存在")
+}
