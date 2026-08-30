@@ -14,6 +14,7 @@ import (
 
 	"github.com/soulteary/flare/config/data"
 	"github.com/soulteary/flare/config/define"
+	"github.com/soulteary/flare/config/data"
 	"github.com/soulteary/flare/internal/auth"
 	"github.com/soulteary/flare/internal/pool"
 	version "github.com/soulteary/version-kit"
@@ -75,10 +76,8 @@ func exportBackup(c *echo.Context) error {
 		return c.String(http.StatusUnauthorized, "请先登录")
 	}
 
-	workDir, err := os.Getwd()
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "获取工作目录失败")
-	}
+	// 获取当前用户名，用于用户数据隔离
+	username := auth.GetUserName(c)
 
 	// 创建临时zip文件
 	tmpFile, err := os.CreateTemp("", "flare-backup-*.zip")
@@ -91,7 +90,15 @@ func exportBackup(c *echo.Context) error {
 	zipWriter := zip.NewWriter(tmpFile)
 
 	for _, name := range backupFiles {
-		filePath := filepath.Join(workDir, name+".yml")
+		// 根据当前用户选择配置文件路径
+		filePath := name + ".yml"
+		if username != "" {
+			userDir := filepath.Join("users", username)
+			userFilePath := filepath.Join(userDir, name+".yml")
+			if _, statErr := os.Stat(userFilePath); statErr == nil {
+				filePath = userFilePath
+			}
+		}
 		fileData, readErr := os.ReadFile(filePath)
 		if readErr != nil {
 			// 文件不存在则跳过
@@ -119,7 +126,11 @@ func exportBackup(c *echo.Context) error {
 
 	// 设置下载响应头
 	c.Response().Header().Set("Content-Type", "application/zip")
-	c.Response().Header().Set("Content-Disposition", "attachment; filename=flare-backup.zip")
+	backupName := "flare-backup.zip"
+	if username != "" {
+		backupName = "flare-backup-" + username + ".zip"
+	}
+	c.Response().Header().Set("Content-Disposition", "attachment; filename="+backupName)
 	c.Response().Header().Set("Content-Length", fmt.Sprintf("%d", len(zipData)))
 	return c.Blob(http.StatusOK, "application/zip", zipData)
 }
@@ -163,10 +174,8 @@ func importBackup(c *echo.Context) error {
 	}
 	defer zipReader.Close()
 
-	workDir, err := os.Getwd()
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "获取工作目录失败")
-	}
+	// 获取当前用户名，用于用户数据隔离
+	username := auth.GetUserName(c)
 
 	restoredCount := 0
 	for _, f := range zipReader.File {

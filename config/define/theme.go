@@ -180,5 +180,13 @@ func getDefaultThemePalettes() []model.Theme {
 			Name:   "graphite",
 			Colors: model.Palette{Background: "#212121", Primary: "#BDBDBD", Accent: "#616161"},
 		},
+		{
+			Name:   "sky",
+			Colors: model.Palette{Background: "#E3F2FD", Primary: "#0D47A1", Accent: "#1976D2"},
+		},
+		{
+			Name:   "cherry",
+			Colors: model.Palette{Background: "#FCE4EC", Primary: "#880E4F", Accent: "#F06292"},
+		},
 	}
 }

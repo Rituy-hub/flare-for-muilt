@@ -46,6 +46,10 @@ func NewRouter(appFlags *model.Flags) (http.Handler, error) {
 		e.Use(logger.NewEchoWithConfig(log, logger.LoggerConfig{Skipper: logger.DefaultRequestLogSkipper}))
 	}
 	auth.RequestHandle(e)
+	// 创建默认管理员账户
+	if err := auth.CreateDefaultAdmin(); err != nil {
+		log.Printf("[auth] 创建默认管理员失败: %v", err)
+	}
 	// 用户数据隔离中间件：根据当前登录用户设置数据目录
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {

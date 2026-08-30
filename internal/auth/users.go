@@ -15,8 +15,10 @@ import (
 
 // UserRecord 用户记录
 type UserRecord struct {
-	Username     string `yaml:"username"`
-	PasswordHash string `yaml:"password_hash"`
+	Username          string `yaml:"username"`
+	PasswordHash      string `yaml:"password_hash"`
+	IsAdmin           bool   `yaml:"is_admin"`
+	MustChangePassword bool  `yaml:"must_change_password"`
 }
 
 // UsersData 用户数据

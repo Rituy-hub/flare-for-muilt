@@ -59,6 +59,8 @@ func RequestHandle(e *echo.Echo) {
 		e.POST(define.MiscPages.Logout.Path, logout)
 		e.GET(define.MiscPages.Register.Path, registerPage)
 		e.POST(define.MiscPages.Register.Path, register)
+		e.GET("/change-password", changePasswordPage)
+		e.POST("/change-password", changePassword)
 		log.Printf("[auth] 登录模式已启用，session名称=%s，cookie密钥长度=%d", sessionName, len(cookieSecret))
 	}
 }
@@ -120,6 +122,78 @@ func GetUserLoginDate(c *echo.Context) string {
 		}
 	}
 	return ""
+}
+
+// changePasswordPage 修改密码页面
+func changePasswordPage(c *echo.Context) error {
+	username := GetUserName(c)
+	if username == "" {
+		return c.Redirect(http.StatusFound, define.MiscPages.Login.Path)
+	}
+
+	html := `<!doctype html><html lang=zh><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>修改密码</title><style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f5;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
+.login-box{background:#fff;padding:40px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.1);width:360px}
+.login-box h2{text-align:center;margin:0 0 10px;color:#333}
+.login-box .tip{text-align:center;color:#e74c3c;font-size:14px;margin-bottom:20px}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;margin-bottom:8px;color:#666;font-size:14px}
+.form-group input{width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-size:14px;box-sizing:border-box}
+.form-group input:focus{outline:none;border-color:#4a90d9}
+.btn-login{width:100%;padding:12px;background:#4a90d9;color:#fff;border:none;border-radius:4px;font-size:16px;cursor:pointer}
+.btn-login:hover{background:#357abd}
+.error{color:#e74c3c;font-size:14px;margin-bottom:15px;text-align:center}
+</style></head><body><div class=login-box><h2>修改密码</h2><p class=tip>首次登录请修改密码</p>
+<form method=POST action=/change-password>
+<div class=form-group><label>当前用户：` + username + `</label></div>
+<div class=form-group><label>新密码</label><input type=password name=new_password placeholder="请输入新密码" required></div>
+<div class=form-group><label>确认新密码</label><input type=password name=confirm_password placeholder="请再次输入新密码" required></div>
+<button type=submit class=btn-login>确认修改</button>
+</form>
+</div></body></html>`
+	return c.HTML(http.StatusOK, html)
+}
+
+// changePassword 修改密码处理
+func changePassword(c *echo.Context) error {
+	username := GetUserName(c)
+	if username == "" {
+		return c.Redirect(http.StatusFound, define.MiscPages.Login.Path)
+	}
+
+	newPassword := c.FormValue("new_password")
+	confirmPassword := c.FormValue("confirm_password")
+
+	renderError := func(msg string) string {
+		return `<!doctype html><html lang=zh><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>修改密码</title><style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f5;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
+.login-box{background:#fff;padding:40px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.1);width:360px}
+.error{color:#e74c3c;font-size:14px;margin-bottom:15px;text-align:center}
+.btn-back{display:block;text-align:center;padding:12px;background:#4a90d9;color:#fff;text-decoration:none;border-radius:4px;font-size:16px}
+</style></head><body><div class=login-box><p class=error>` + msg + `</p><a href=/change-password class=btn-back>返回修改</a></div></body></html>`
+	}
+
+	if newPassword == "" || confirmPassword == "" {
+		return c.HTML(http.StatusBadRequest, renderError("密码不能为空"))
+	}
+
+	if newPassword != confirmPassword {
+		return c.HTML(http.StatusBadRequest, renderError("两次输入的密码不一致"))
+	}
+
+	if err := ChangeUserPassword(username, newPassword); err != nil {
+		return c.HTML(http.StatusBadRequest, renderError("修改密码失败: "+err.Error()))
+	}
+
+	log.Printf("[auth] 密码修改成功: username=%s", username)
+
+	successHTML := `<!doctype html><html lang=zh><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>修改成功</title><style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f5;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
+.login-box{background:#fff;padding:40px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.1);width:360px;text-align:center}
+.success{color:#27ae60;font-size:18px;margin-bottom:20px}
+.btn-login{display:block;padding:12px;background:#4a90d9;color:#fff;text-decoration:none;border-radius:4px;font-size:16px}
+</style></head><body><div class=login-box><p class=success>密码修改成功！请重新登录</p><a href=` + define.MiscPages.Login.Path + ` class=btn-login>前往登录</a></div></body></html>`
+	return c.HTML(http.StatusOK, successHTML)
 }
 
 // loginPage 登录页面
@@ -205,6 +279,10 @@ func login(c *echo.Context) error {
 	}
 
 	log.Printf("[auth] 登录成功: username=%s", username)
+	// 检查是否需要强制修改密码
+	if MustChangePasswordUser(username) {
+		return c.Redirect(http.StatusFound, "/change-password")
+	}
 	return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
 }
 
