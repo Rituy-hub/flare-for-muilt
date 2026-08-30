@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  flare:
+    # 替换为你的 GitHub 用户名和仓库名
+    image: ghcr.io/你的用户名/flare:latest
+    container_name: flare
+    restart: unless-stopped
+    command: flare
+    # 启用登录模式（取消下面两行注释，并设置环境变量）
+    # command: flare --nologin=0
+    # environment:
+    #   - FLARE_USER=admin
+    #   - FLARE_PASS=你的密码
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./app:/app
