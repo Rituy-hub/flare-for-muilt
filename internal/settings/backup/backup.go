@@ -14,7 +14,6 @@ import (
 
 	"github.com/soulteary/flare/config/data"
 	"github.com/soulteary/flare/config/define"
-	"github.com/soulteary/flare/config/data"
 	"github.com/soulteary/flare/internal/auth"
 	"github.com/soulteary/flare/internal/pool"
 	version "github.com/soulteary/version-kit"
@@ -207,8 +206,13 @@ func importBackup(c *echo.Context) error {
 			continue
 		}
 
-		// 写入到工作目录
-		targetPath := filepath.Join(workDir, f.Name)
+		// 根据当前用户写入到对应目录
+		targetPath := f.Name
+		if username != "" {
+			userDir := filepath.Join("users", username)
+			os.MkdirAll(userDir, 0755)
+			targetPath = filepath.Join(userDir, f.Name)
+		}
 		if writeErr := os.WriteFile(targetPath, content, os.ModePerm); writeErr != nil {
 			continue
 		}

@@ -10,7 +10,6 @@ import (
 	"sync"
 
 	"gopkg.in/yaml.v2"
-
 )
 
 // UserRecord 用户记录

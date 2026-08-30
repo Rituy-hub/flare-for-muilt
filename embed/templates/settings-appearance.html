@@ -1,4 +1,4 @@
-{{ define "settings-appearance.html" }}<div class=setting-group-container><form method=POST action="{{ .SettingPages.Appearance.Path }}">{{ if not .IsAdmin }}<div style="background:#fff3cd;color:#856404;padding:10px;border-radius:4px;margin-bottom:15px;">提示：您当前为普通用户，只能查看模块设置，无法修改。如需修改请使用管理员账号登录。</div>{{ end }}<h2>{{ T .Locale "general_settings" }}</h2><div class=form-group><label for=settings-locale>{{ T .Locale "language" }}</label>
+{{ define "settings-appearance.html" }}<div class=setting-group-container><form method=POST action="{{ .SettingPages.Appearance.Path }}">{{ if not .IsAdmin }}<div style="background:#fff3cd;color:#856404;padding:10px;border-radius:4px;margin-bottom:15px;">提示：您当前为普通用户，通用设置可正常修改，模块设置（展示应用、展示书签、展示多用户功能）仅可查看无法修改。</div>{{ end }}<h2>{{ T .Locale "general_settings" }}</h2><div class=form-group><label for=settings-locale>{{ T .Locale "language" }}</label>
 <select name=locale id=settings-locale><option value=zh {{ if eq .optionlocale "zh" }}selected{{ end }}>{{ T .Locale "lang_zh" }}<option value=en {{ if eq .optionlocale "en" }}selected{{ end }}>{{ T .Locale "lang_en" }}</select></div><div class=form-group><label for=settings-title>{{ T .Locale "custom_title" }}</label>
 <input name=title id=settings-title class=option-input placeholder="{{ T .Locale "site_title_placeholder" }}" value={{.OptionTitle}}></div><div class=form-group><label for=settings-footer>{{ T .Locale "custom_footer" }}</label>
 <textarea name=footer id=settings-footer class=option-input cols=30 rows=10 placeholder="{{ T .Locale "footer_placeholder" }}">{{.OptionFooter}}</textarea><p class=help-text>{{ T .Locale "footer_help" }}</div><div class=form-group><label for=settings-open-app-newtab>{{ T .Locale "open_app_newtab" }}</label>
@@ -27,7 +27,7 @@
 {{ end }}
 {{ if .OptionIconModeFilling }}
 <select name=icon-mode id=settings-icon-mode><option value=DEFAULT>{{ T .Locale "icon_mode_default" }}<option value=FILLING selected>{{ T .Locale "icon_mode_filling" }}</select>
-{{ end }}</div><h2>{{ T .Locale "module_settings" }}</h2><div class=form-group><label for=settings-show-title>{{ T .Locale "show_title_component" }}</label>
+{{ end }}</div><h2>{{ T .Locale "module_settings" }}</h2><fieldset {{ if not .IsAdmin }}disabled style="opacity:0.7;"{{ end }}><div class=form-group><label for=settings-show-title>{{ T .Locale "show_title_component" }}</label>
 {{ if .OptionShowTitle }}
 <select name=show-title id=settings-show-title><option value=1 selected>{{ T .Locale "yes" }}<option value=0>{{ T .Locale "no" }}</select>
 {{ else }}
@@ -63,4 +63,4 @@
 <select name=hide-help-button id=settings-hide-help-button><option value=1 selected>{{ T .Locale "yes" }}<option value=0>{{ T .Locale "no" }}</select>
 {{ else }}
 <select name=hide-help-button id=settings-hide-help-button><option value=0 selected>{{ T .Locale "no" }}<option value=1>{{ T .Locale "yes" }}</select>
-{{ end }}</div><div class=form-group><input class=btn-submit type=submit value="{{ T .Locale "save_changes" }}"></div></form></div>{{ end }}
+{{ end }}</div></fieldset><div class=form-group><input class=btn-submit type=submit value="{{ T .Locale "save_changes" }}"></div></form></div>{{ end }}
