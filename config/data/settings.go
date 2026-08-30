@@ -90,6 +90,7 @@ func UpdateAppearance(update model.Application) bool {
 	options.IconMode = update.IconMode
 	options.KeepLetterCase = update.KeepLetterCase
 	options.Locale = update.Locale
+	options.ShowMultiUser = update.ShowMultiUser
 
 	return saveAppConfigToYamlFile("config", options)
 }
