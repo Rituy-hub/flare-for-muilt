@@ -138,7 +138,7 @@ func loginPage(c *echo.Context) error {
 
 	registerBtn := ""
 	if showRegister {
-		registerBtn = `<form method=GET action=` + define.MiscPages.Register.Path + ` style="margin-top:10px"><button type=submit class=btn-register>注册</button></form>`
+		registerBtn = `<form method=GET action=` + define.MiscPages.Register.Path + ` style="flex:1;"><button type=submit class=btn-register style="width:100%;">注册</button></form>`
 	}
 
 	html := `<!doctype html><html lang=zh><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>登录</title><style>
@@ -151,15 +151,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .form-group input:focus{outline:none;border-color:#4a90d9}
 .btn-login{width:100%;padding:12px;background:#4a90d9;color:#fff;border:none;border-radius:4px;font-size:16px;cursor:pointer}
 .btn-login:hover{background:#357abd}
-.btn-register{width:100%;padding:12px;background:#f0f0f0;color:#333;border:none;border-radius:4px;font-size:16px;cursor:pointer}
-.btn-register:hover{background:#e0e0e0}
+.btn-register{width:100%;padding:12px;background:#4a90d9;color:#fff;border:none;border-radius:4px;font-size:16px;cursor:pointer}
+.btn-register:hover{background:#357abd}
 </style></head><body><div class=login-box><h2>用户登录</h2>
 <form method=POST action=` + define.MiscPages.Login.Path + `>
 <div class=form-group><label>用户名</label><input type=text name=username placeholder="请输入用户名" required></div>
 <div class=form-group><label>密码</label><input type=password name=password placeholder="请输入密码" required></div>
-<button type=submit class=btn-login>登录</button>
+<div style="display:flex;gap:10px;"><button type=submit class=btn-login style="flex:1;">登录</button>
+` + registerBtn + `</div>
 </form>
-` + registerBtn + `
 </div></body></html>`
 	return c.HTML(http.StatusOK, html)
 }

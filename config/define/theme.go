@@ -140,5 +140,45 @@ func getDefaultThemePalettes() []model.Theme {
 			Name:   "onedark",
 			Colors: model.Palette{Background: "#282c34", Primary: "#dfd9d6", Accent: "#98c379"},
 		},
+		{
+			Name:   "sunset",
+			Colors: model.Palette{Background: "#2D1B3D", Primary: "#FFD89B", Accent: "#FF6B35"},
+		},
+		{
+			Name:   "ocean",
+			Colors: model.Palette{Background: "#0A2540", Primary: "#B8E0FF", Accent: "#00B4D8"},
+		},
+		{
+			Name:   "forest",
+			Colors: model.Palette{Background: "#1A2F1A", Primary: "#C8E6C9", Accent: "#7CB342"},
+		},
+		{
+			Name:   "rose",
+			Colors: model.Palette{Background: "#FCE4EC", Primary: "#880E4F", Accent: "#E91E63"},
+		},
+		{
+			Name:   "slate",
+			Colors: model.Palette{Background: "#37474F", Primary: "#CFD8DC", Accent: "#546E7A"},
+		},
+		{
+			Name:   "amber",
+			Colors: model.Palette{Background: "#3E2723", Primary: "#FFE0B2", Accent: "#FFB300"},
+		},
+		{
+			Name:   "violet",
+			Colors: model.Palette{Background: "#311B92", Primary: "#E1BEE7", Accent: "#7C4DFF"},
+		},
+		{
+			Name:   "mint",
+			Colors: model.Palette{Background: "#E0F2F1", Primary: "#004D40", Accent: "#26A69A"},
+		},
+		{
+			Name:   "coral",
+			Colors: model.Palette{Background: "#FFF3E0", Primary: "#BF360C", Accent: "#FF5722"},
+		},
+		{
+			Name:   "graphite",
+			Colors: model.Palette{Background: "#212121", Primary: "#BDBDBD", Accent: "#616161"},
+		},
 	}
 }
