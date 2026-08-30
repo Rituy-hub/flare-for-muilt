@@ -9,9 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v2"
 
-	"github.com/soulteary/flare/config/define"
 )
 
 // UserRecord 用户记录
@@ -154,11 +153,6 @@ func VerifyUser(username, password string) bool {
 		}
 	}
 	return false
-}
-
-// IsMultiUserEnabled 检查是否启用多用户功能
-func IsMultiUserEnabled() bool {
-	return define.AppFlags.EnableMultiUser
 }
 
 // GetUserDir 获取用户数据目录
