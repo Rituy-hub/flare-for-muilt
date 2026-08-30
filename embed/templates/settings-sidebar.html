@@ -1,0 +1,7 @@
+{{ define "settings-sidebar.html" }}<div class="sidebar pull-left">{{ $pageName := .PageName }}
+<a href="{{ .SettingPages.Theme.Path }}" {{if eq .pagename .settingpages.theme.name}}class=active {{end}}>{{ T .Locale "nav_theme" }}</a>
+<a href="{{ .SettingPages.Weather.Path }}" {{if eq .pagename .settingpages.weather.name}}class=active {{end}}>{{ T .Locale "nav_weather" }}</a>
+<a href="{{ .SettingPages.Search.Path }}" {{if eq .pagename .settingpages.search.name}}class=active {{end}}>{{ T .Locale "nav_search" }}</a>
+<a href="{{ .SettingPages.Appearance.Path }}" {{if eq .pagename .settingpages.appearance.name}}class=active {{end}}>{{ T .Locale "nav_appearance" }}</a>
+<a href="{{ .SettingPages.Backup.Path }}" {{if eq .pagename .settingpages.backup.name}}class=active {{end}}>{{ T .Locale "nav_backup" }}</a>
+<a href="{{ .SettingPages.Others.Path }}" {{if eq .pagename .settingpages.others.name}}class=active {{end}}>{{ T .Locale "nav_others" }}</a></div>{{ end }}
