@@ -69,29 +69,23 @@ func updateAppearanceOptions(c *echo.Context) error {
 		update.Locale = body.Locale
 	}
 
-	// 模块设置（仅管理员可修改，非管理员保持原值）
+	// 模块设置（所有用户可编辑）
+	update.ShowTitle = body.OptionShowTitle
+	update.Greetings = body.OptionGreetings
+	update.ShowDateTime = body.OptionShowDateTime
+	update.ShowApps = body.OptionShowApps
+	update.ShowBookmarks = body.OptionShowBookmarks
+	update.HideSettingsButton = body.HideSettingsButton
+	update.HideHelpButton = body.HideHelpButton
+
+	// 专项设置（仅管理员可修改，非管理员保持原值）
 	username := auth.GetUserName(c)
 	isAdmin := username == "" || auth.IsAdminUser(username)
 	if isAdmin {
-		update.ShowTitle = body.OptionShowTitle
-		update.Greetings = body.OptionGreetings
-		update.ShowDateTime = body.OptionShowDateTime
-		update.ShowApps = body.OptionShowApps
-		update.ShowBookmarks = body.OptionShowBookmarks
 		update.ShowMultiUser = body.OptionShowMultiUser
-		update.HideSettingsButton = body.HideSettingsButton
-		update.HideHelpButton = body.HideHelpButton
 	} else {
-		// 非管理员保持模块设置原值
-		update.ShowTitle = options.ShowTitle
-		update.Greetings = options.Greetings
-		update.ShowDateTime = options.ShowDateTime
-		update.ShowApps = options.ShowApps
-		update.ShowBookmarks = options.ShowBookmarks
 		update.ShowMultiUser = options.ShowMultiUser
-		update.HideSettingsButton = options.HideSettingsButton
-		update.HideHelpButton = options.HideHelpButton
-		log.Printf("[设置] 非管理员用户，模块设置保持不变: username=%s", username)
+		log.Printf("[设置] 非管理员用户，专项设置保持不变: username=%s", username)
 	}
 
 	data.UpdateAppearance(update)

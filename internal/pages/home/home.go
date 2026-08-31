@@ -77,19 +77,12 @@ func getMyIPLocationWithTimeout(timeout time.Duration) string {
 }
 
 func RegisterRouting(e *echo.Echo) {
-	if define.AppFlags.Visibility != "PRIVATE" {
-		e.GET(define.RegularPages.Home.Path, pageHome)
-		e.GET(define.RegularPages.Help.Path, renderHelp)
-		e.POST(define.RegularPages.Home.Path, pageSearch)
-		e.GET(define.RegularPages.Applications.Path, pageApplication)
-		e.GET(define.RegularPages.Bookmarks.Path, pageBookmark)
-	} else {
-		e.GET(define.RegularPages.Home.Path, pageHome, auth.AuthRequired)
-		e.GET(define.RegularPages.Help.Path, renderHelp, auth.AuthRequired)
-		e.POST(define.RegularPages.Home.Path, pageSearch, auth.AuthRequired)
-		e.GET(define.RegularPages.Applications.Path, pageApplication, auth.AuthRequired)
-		e.GET(define.RegularPages.Bookmarks.Path, pageBookmark, auth.AuthRequired)
-	}
+	// 多用户模式下，所有页面都需要登录
+	e.GET(define.RegularPages.Home.Path, pageHome, auth.AuthRequired)
+	e.GET(define.RegularPages.Help.Path, renderHelp, auth.AuthRequired)
+	e.POST(define.RegularPages.Home.Path, pageSearch, auth.AuthRequired)
+	e.GET(define.RegularPages.Applications.Path, pageApplication, auth.AuthRequired)
+	e.GET(define.RegularPages.Bookmarks.Path, pageBookmark, auth.AuthRequired)
 }
 
 func pageHome(c *echo.Context) error {

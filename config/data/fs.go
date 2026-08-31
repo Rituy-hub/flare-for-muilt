@@ -1,6 +1,7 @@
 package data
 
 import (
+	"log"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -36,16 +37,15 @@ func getConfigPath(config string) string {
 	if err != nil {
 		return filepath.Join(".", config+".yml")
 	}
-	// 如果设置了当前用户，使用用户目录下的配置文件
+	// 如果设置了当前用户，始终使用用户目录下的配置文件
 	user := GetCurrentUser()
 	if user != "" {
 		userDir := filepath.Join(rootDir, "users", user)
-		userConfigPath := filepath.Join(userDir, config+".yml")
-		// 如果用户目录下的配置文件存在，则使用它
-		if checkExists(userConfigPath) {
-			return userConfigPath
+		// 确保用户目录存在
+		if err := os.MkdirAll(userDir, 0755); err != nil {
+			log.Printf("[数据隔离] 创建用户目录失败: user=%s, error=%v", user, err)
 		}
-		// 否则使用全局配置文件
+		return filepath.Join(userDir, config+".yml")
 	}
 	return filepath.Join(rootDir, config+".yml")
 }
