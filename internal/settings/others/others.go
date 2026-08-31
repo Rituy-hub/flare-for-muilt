@@ -100,5 +100,43 @@ func updateOthers(c *echo.Context) error {
 		return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
 	}
 
+	if action == "change_password" {
+		// 所有已登录用户都可以修改密码
+		username := auth.GetUserName(c)
+		if username == "" {
+			return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+		}
+
+		// 验证当前密码
+		currentPassword := c.FormValue("current_password")
+		if !auth.VerifyUser(username, currentPassword) {
+			log.Printf("[设置] 修改密码失败: 当前密码验证不通过, username=%s", username)
+			return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+		}
+
+		newPassword := c.FormValue("new_password")
+		confirmPassword := c.FormValue("confirm_password")
+
+		// 验证新密码不能为空
+		if newPassword == "" {
+			return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+		}
+
+		// 验证两次新密码一致
+		if newPassword != confirmPassword {
+			log.Printf("[设置] 修改密码失败: 两次新密码不一致, username=%s", username)
+			return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+		}
+
+		// 修改密码
+		if err := auth.ChangeUserPassword(username, newPassword); err != nil {
+			log.Printf("[设置] 修改密码失败: %v", err)
+			return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+		}
+
+		log.Printf("[设置] 用户密码已修改: username=%s", username)
+		return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+	}
+
 	return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
 }
