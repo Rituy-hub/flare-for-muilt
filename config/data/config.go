@@ -34,6 +34,8 @@ ShowDateTime: true
 ShowApps: true
 # 展示书签组件
 ShowBookmarks: true
+# 展示多用户功能
+ShowMultiUser: true
 # 隐藏界面中的设置按钮
 HideSettingButton: false
 # 隐藏界面中的帮助按钮
