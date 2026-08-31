@@ -73,6 +73,13 @@ func updateOthers(c *echo.Context) error {
 			return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
 		}
 
+		// 验证当前密码
+		currentPassword := c.FormValue("current_password")
+		if !auth.VerifyUser(username, currentPassword) {
+			log.Printf("[设置] 修改用户名失败: 当前密码验证不通过, username=%s", username)
+			return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+		}
+
 		newUsername := strings.TrimSpace(c.FormValue("new_username"))
 		if newUsername == "" {
 			return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
