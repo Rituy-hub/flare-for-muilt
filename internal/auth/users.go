@@ -213,7 +213,16 @@ func CreateDefaultAdmin() error {
 		MustChangePassword: true,
 	})
 
-	return saveUsers(users)
+	if err := saveUsers(users); err != nil {
+		return err
+	}
+
+	// 关键：更新缓存，否则后续验证读取的还是旧缓存
+	usersMu.Lock()
+	usersCache = users
+	usersMu.Unlock()
+
+	return nil
 }
 
 // IsAdminUser 检查用户是否是管理员
@@ -254,7 +263,14 @@ func ChangeUserPassword(username, newPassword string) error {
 		if u.Username == username {
 			users.Users[i].PasswordHash = HashPassword(newPassword)
 			users.Users[i].MustChangePassword = false
-			return saveUsers(users)
+			if err := saveUsers(users); err != nil {
+				return err
+			}
+			// 更新缓存
+			usersMu.Lock()
+			usersCache = users
+			usersMu.Unlock()
+			return nil
 		}
 	}
 	return fmt.Errorf("用户不存在")
@@ -269,7 +285,14 @@ func UpdateAdminUsername(oldUsername, newUsername string) error {
 	for i, u := range users.Users {
 		if u.Username == oldUsername && u.IsAdmin {
 			users.Users[i].Username = newUsername
-			return saveUsers(users)
+			if err := saveUsers(users); err != nil {
+				return err
+			}
+			// 更新缓存
+			usersMu.Lock()
+			usersCache = users
+			usersMu.Unlock()
+			return nil
 		}
 	}
 	return fmt.Errorf("管理员用户不存在")
