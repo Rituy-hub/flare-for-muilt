@@ -197,7 +197,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 }
 
 // loginPage 登录页面
-func loginPage(c *echo.Context) error {
+func renderLoginPage(c *echo.Context, errorMsg string) error {
 	// 检查是否已登录
 	sess, err := session.Get(sessionName, c)
 	if err == nil && sess.Values[SESSION_KEY_USER_NAME] != nil {
@@ -208,6 +208,11 @@ func loginPage(c *echo.Context) error {
 	registerBtn := ""
 	if options, err := data.GetAllSettingsOptions(); err == nil && options.ShowMultiUser {
 		registerBtn = `<button type=button class=btn-login style="flex:1;" onclick="location.href='` + define.MiscPages.Register.Path + `'">注册</button>`
+	}
+
+	errorHTML := ""
+	if errorMsg != "" {
+		errorHTML = `<div style="background:#f8d7da;color:#721c24;padding:10px;border-radius:4px;margin-bottom:15px;text-align:center;font-size:14px;">` + errorMsg + `</div>`
 	}
 
 	html := `<!doctype html><html lang=zh><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>登录</title><style>
@@ -223,6 +228,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 .btn-register{width:100%;padding:12px;background:#4a90d9;color:#fff;border:none;border-radius:4px;font-size:16px;cursor:pointer}
 .btn-register:hover{background:#357abd}
 </style></head><body><div class=login-box><h2>用户登录</h2>
+` + errorHTML + `
 <form method=POST action=` + define.MiscPages.Login.Path + `>
 <div class=form-group><label>用户名</label><input type=text name=username placeholder="请输入用户名" required></div>
 <div class=form-group><label>密码</label><input type=password name=password placeholder="请输入密码" required></div>
@@ -230,6 +236,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 </form>
 </div></body></html>`
 	return c.HTML(http.StatusOK, html)
+}
+
+func loginPage(c *echo.Context) error {
+	return renderLoginPage(c, "")
 }
 
 func login(c *echo.Context) error {
@@ -242,7 +252,7 @@ func login(c *echo.Context) error {
 	password := c.FormValue("password")
 
 	if strings.Trim(username, " ") == "" || strings.Trim(password, " ") == "" {
-		return c.HTMLBlob(http.StatusBadRequest, internalErrorEmpty)
+		return renderLoginPage(c, "用户名和密码不能为空")
 	}
 
 	// 多用户登录：优先检查用户列表，然后 fallback 到管理员账户
@@ -256,7 +266,7 @@ func login(c *echo.Context) error {
 
 	if !isValidUser {
 		log.Printf("[auth] 登录失败: 用户名或密码错误, username=%s", username)
-		return c.HTMLBlob(http.StatusBadRequest, internalErrorInput)
+		return renderLoginPage(c, "用户名或密码错误，请重新输入")
 	}
 
 	// 初始化用户数据目录
@@ -269,7 +279,7 @@ func login(c *echo.Context) error {
 
 	if err := sess.Save(c.Request(), c.Response()); err != nil {
 		log.Printf("[auth] 登录失败: session.Save 出错, username=%s, error=%v", username, err)
-		return c.HTMLBlob(http.StatusBadRequest, internalErrorSave)
+		return renderLoginPage(c, "登录失败，请稍后重试")
 	}
 
 	log.Printf("[auth] 登录成功: username=%s", username)
