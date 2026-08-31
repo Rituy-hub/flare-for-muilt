@@ -200,7 +200,7 @@ func loginPage(c *echo.Context) error {
 	// 检查是否已登录
 	sess, err := session.Get(sessionName, c)
 	if err == nil && sess.Values[SESSION_KEY_USER_NAME] != nil {
-		return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+		return c.Redirect(http.StatusFound, define.RegularPages.Home.Path)
 	}
 
 	// 多用户版本始终显示注册按钮
@@ -273,17 +273,17 @@ func login(c *echo.Context) error {
 	if MustChangePasswordUser(username) {
 		return c.Redirect(http.StatusFound, "/change-password")
 	}
-	return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+	return c.Redirect(http.StatusFound, define.RegularPages.Home.Path)
 }
 
 func logout(c *echo.Context) error {
 	sess, err := session.Get(sessionName, c)
 	if err != nil {
 		log.Printf("[auth] 登出失败: session.Get 出错, error=%v", err)
-		return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+		return c.Redirect(http.StatusFound, define.MiscPages.Login.Path)
 	}
 	if sess.Values[SESSION_KEY_USER_NAME] == nil {
-		return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+		return c.Redirect(http.StatusFound, define.MiscPages.Login.Path)
 	}
 	delete(sess.Values, SESSION_KEY_USER_NAME)
 	delete(sess.Values, SESSION_KEY_LOGIN_DATE)
@@ -292,7 +292,7 @@ func logout(c *echo.Context) error {
 		log.Printf("[auth] 登出失败: session.Save 出错, error=%v", err)
 		return c.HTMLBlob(http.StatusBadRequest, internalErrorSave)
 	}
-	return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+	return c.Redirect(http.StatusFound, define.MiscPages.Login.Path)
 }
 
 // registerPage 注册页面
