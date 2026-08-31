@@ -12,6 +12,7 @@ import (
 	session "github.com/labstack/echo-contrib/v5/session"
 	"github.com/labstack/echo/v5"
 
+	"github.com/soulteary/flare/config/data"
 	"github.com/soulteary/flare/config/define"
 )
 
@@ -203,8 +204,11 @@ func loginPage(c *echo.Context) error {
 		return c.Redirect(http.StatusFound, define.RegularPages.Home.Path)
 	}
 
-	// 多用户版本始终显示注册按钮
-	registerBtn := `<button type=button class=btn-login style="flex:1;" onclick="location.href='` + define.MiscPages.Register.Path + `'">注册</button>`
+	// 根据多用户功能开关决定是否显示注册按钮
+	registerBtn := ""
+	if options, err := data.GetAllSettingsOptions(); err == nil && options.ShowMultiUser {
+		registerBtn = `<button type=button class=btn-login style="flex:1;" onclick="location.href='` + define.MiscPages.Register.Path + `'">注册</button>`
+	}
 
 	html := `<!doctype html><html lang=zh><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>登录</title><style>
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f5;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
@@ -297,6 +301,18 @@ func logout(c *echo.Context) error {
 
 // registerPage 注册页面
 func registerPage(c *echo.Context) error {
+	// 检查多用户功能是否开启
+	if options, err := data.GetAllSettingsOptions(); err == nil && !options.ShowMultiUser {
+		closedHTML := `<!doctype html><html lang=zh><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>注册已关闭</title><style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f5;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
+.register-box{background:#fff;padding:40px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.1);width:360px;text-align:center}
+.register-box h2{margin:0 0 20px;color:#333}
+.register-box p{color:#666;margin-bottom:20px}
+.btn-login{display:block;width:100%;padding:12px;background:#4a90d9;color:#fff;text-decoration:none;border-radius:4px;font-size:16px;box-sizing:border-box}
+</style></head><body><div class=register-box><h2>注册已关闭</h2><p>管理员已关闭多用户注册功能</p><a href=` + define.MiscPages.Login.Path + ` class=btn-login>返回登录</a></div></body></html>`
+		return c.HTML(http.StatusOK, closedHTML)
+	}
+
 	html := `<!doctype html><html lang=zh><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>用户注册</title><style>
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f5;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
 .register-box{background:#fff;padding:40px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.1);width:360px}
@@ -323,6 +339,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 
 // register 注册处理
 func register(c *echo.Context) error {
+	// 检查多用户功能是否开启
+	if options, err := data.GetAllSettingsOptions(); err == nil && !options.ShowMultiUser {
+		return c.Redirect(http.StatusFound, define.MiscPages.Login.Path)
+	}
+
 	username := strings.TrimSpace(c.FormValue("username"))
 	password := c.FormValue("password")
 	password2 := c.FormValue("password2")
