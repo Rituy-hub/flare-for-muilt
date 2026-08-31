@@ -212,7 +212,7 @@ func loginPage(c *echo.Context) error {
 
 	registerBtn := ""
 	if showRegister {
-		registerBtn = `<form method=GET action=` + define.MiscPages.Register.Path + ` style="flex:1;"><button type=submit class=btn-register style="width:100%;">注册</button></form>`
+		registerBtn = `<button type=button class=btn-login style="flex:1;" onclick="location.href='` + define.MiscPages.Register.Path + `'">注册</button>`
 	}
 
 	html := `<!doctype html><html lang=zh><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>登录</title><style>
@@ -231,8 +231,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 <form method=POST action=` + define.MiscPages.Login.Path + `>
 <div class=form-group><label>用户名</label><input type=text name=username placeholder="请输入用户名" required></div>
 <div class=form-group><label>密码</label><input type=password name=password placeholder="请输入密码" required></div>
-<div style="display:flex;gap:10px;"><button type=submit class=btn-login style="flex:1;">登录</button>
-` + registerBtn + `</div>
+<div style="display:flex;gap:10px;"><button type=submit class=btn-login style="flex:1;">登录</button>` + registerBtn + `</div>
 </form>
 </div></body></html>`
 	return c.HTML(http.StatusOK, html)

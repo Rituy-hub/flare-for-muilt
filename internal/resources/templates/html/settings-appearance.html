@@ -27,7 +27,7 @@
 {{ end }}
 {{ if .OptionIconModeFilling }}
 <select name=icon-mode id=settings-icon-mode><option value=DEFAULT>{{ T .Locale "icon_mode_default" }}<option value=FILLING selected>{{ T .Locale "icon_mode_filling" }}</select>
-{{ end }}</div><h2>{{ T .Locale "module_settings" }}</h2><fieldset {{ if not .IsAdmin }}disabled style="opacity:0.7;"{{ end }}><div class=form-group><label for=settings-show-title>{{ T .Locale "show_title_component" }}</label>
+{{ end }}</div><h2>{{ T .Locale "module_settings" }}</h2><fieldset {{ if not .IsAdmin }}disabled{{ end }} style="border:none;padding:0;margin:0;{{ if not .IsAdmin }}opacity:0.7;{{ end }}"><div class=form-group><label for=settings-show-title>{{ T .Locale "show_title_component" }}</label>
 {{ if .OptionShowTitle }}
 <select name=show-title id=settings-show-title><option value=1 selected>{{ T .Locale "yes" }}<option value=0>{{ T .Locale "no" }}</select>
 {{ else }}
