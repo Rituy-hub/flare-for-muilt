@@ -75,11 +75,11 @@ func AuthRequired(next echo.HandlerFunc) echo.HandlerFunc {
 		if !define.AppFlags.DisableLoginMode {
 			sess, err := session.Get(sessionName, c)
 			if err != nil {
-				return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+				return c.Redirect(http.StatusFound, define.MiscPages.Login.Path)
 			}
 			user := sess.Values[SESSION_KEY_USER_NAME]
 			if user == nil {
-				return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
+				return c.Redirect(http.StatusFound, define.MiscPages.Login.Path)
 			}
 		}
 		return next(c)
@@ -204,16 +204,8 @@ func loginPage(c *echo.Context) error {
 		return c.Redirect(http.StatusFound, define.SettingPages.Others.Path)
 	}
 
-	// 检查是否启用多用户功能
-	showRegister := false
-	if options, err := data.GetAllSettingsOptions(); err == nil {
-		showRegister = options.ShowMultiUser
-	}
-
-	registerBtn := ""
-	if showRegister {
-		registerBtn = `<button type=button class=btn-login style="flex:1;" onclick="location.href='` + define.MiscPages.Register.Path + `'">注册</button>`
-	}
+	// 多用户版本始终显示注册按钮
+	registerBtn := `<button type=button class=btn-login style="flex:1;" onclick="location.href='` + define.MiscPages.Register.Path + `'">注册</button>`
 
 	html := `<!doctype html><html lang=zh><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>登录</title><style>
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f5f5f5;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
