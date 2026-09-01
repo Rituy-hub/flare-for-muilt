@@ -83,7 +83,12 @@ func saveAppConfigToYamlFile(name string, result model.Application) bool {
 		log.Println("保存程序配置文件失败")
 		return false
 	}
-	invalidateFileCache(name)
+	// 缓存key包含用户名，确保不同用户的数据隔离
+	cacheKey := name
+	if user := GetCurrentUser(); user != "" {
+		cacheKey = user + "/" + name
+	}
+	invalidateFileCache(cacheKey)
 	return true
 }
 
@@ -100,7 +105,12 @@ func loadAppConfigFromYaml(name string) (model.Application, error) {
 		}
 		return result, nil
 	}
-	configFile, err := readFileCached(name, func() ([]byte, error) { return readFile(filePath) })
+	// 缓存key包含用户名，确保不同用户的数据隔离
+	cacheKey := name
+	if user := GetCurrentUser(); user != "" {
+		cacheKey = user + "/" + name
+	}
+	configFile, err := readFileCached(cacheKey, func() ([]byte, error) { return readFile(filePath) })
 	if err != nil {
 		return result, fmt.Errorf("读取配置文件 %s: %w", name, err)
 	}

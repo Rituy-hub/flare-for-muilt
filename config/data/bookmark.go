@@ -95,7 +95,12 @@ func saveBookmarksToYamlFile(name string, data model.Bookmarks) (bool, error) {
 		log.Println("保存数据为书签失败")
 		return false, err
 	}
-	invalidateFileCache(name)
+	// 缓存key包含用户名，确保不同用户的数据隔离
+	cacheKey := name
+	if user := GetCurrentUser(); user != "" {
+		cacheKey = user + "/" + name
+	}
+	invalidateFileCache(cacheKey)
 	return true, nil
 }
 
@@ -112,7 +117,12 @@ func loadBookmarksFromYamlFile(name string, isFavorite bool) (model.Bookmarks, e
 		}
 		return result, nil
 	}
-	configFile, err := readFileCached(name, func() ([]byte, error) { return readFile(filePath) })
+	// 缓存key包含用户名，确保不同用户的数据隔离
+	cacheKey := name
+	if user := GetCurrentUser(); user != "" {
+		cacheKey = user + "/" + name
+	}
+	configFile, err := readFileCached(cacheKey, func() ([]byte, error) { return readFile(filePath) })
 	if err != nil {
 		return result, fmt.Errorf("读取配置文件 %s: %w", name, err)
 	}
